@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://nfruotbh33an"
+path="res://.godot/imported/Урон по жуку.mp3-07c14f0ce9432b1ce92e58264a861a31.mp3str"
+
+[deps]
+
+source_file="res://Audio/Sound/Урон по жуку.mp3"
+dest_files=["res://.godot/imported/Урон по жуку.mp3-07c14f0ce9432b1ce92e58264a861a31.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

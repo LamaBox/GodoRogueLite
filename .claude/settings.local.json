@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Sprites/Background)",
+      "Bash(mkdir -p C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Sprites/Bot/BugBoss)",
+      "Bash(mkdir -p C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Sprites/Cave)",
+      "Bash(mkdir -p C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Sprites/Enviroment/Bonfire)",
+      "Bash(mkdir -p C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Sprites/Enviroment/Chest)",
+      "Bash(cp 'C:/Users/User/RiderProjects/rogueLiteGame/Assets/Sprites/Background/*.png' C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Sprites/Background/)",
+      "Bash(cp 'C:/Users/User/RiderProjects/rogueLiteGame/Assets/Sprites/Bot/BugBoss/*.png' C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Sprites/Bot/BugBoss/)",
+      "Bash(cp 'C:/Users/User/RiderProjects/rogueLiteGame/Assets/Sprites/Bot/*.png' C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Sprites/Bot/)",
+      "Bash(cp 'C:/Users/User/RiderProjects/rogueLiteGame/Assets/Sprites/Cave/*.png' C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Sprites/Cave/)",
+      "Bash(cp 'C:/Users/User/RiderProjects/rogueLiteGame/Assets/Sprites/Enviroment/Bonfire/*.png' C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Sprites/Enviroment/Bonfire/)",
+      "Bash(cp 'C:/Users/User/RiderProjects/rogueLiteGame/Assets/Audio/Music/*.mp3' C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Audio/Music/)",
+      "Bash(cp 'C:/Users/User/RiderProjects/rogueLiteGame/Assets/Audio/Sound/BugBoss/*.mp3' C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Audio/Sound/BugBoss/)",
+      "Bash(cp '__TRACKED_VAR__/Audio/Sound/BugBoss/*.wav' __TRACKED_VAR__/Audio/Sound/BugBoss/)",
+      "Bash(cp '__TRACKED_VAR__/Audio/Sound/Obstacles/*.mp3' __TRACKED_VAR__/Audio/Sound/Obstacles/)",
+      "Bash(cp '__TRACKED_VAR__/Audio/Sound/Player/Music/*.mp3' __TRACKED_VAR__/Audio/Sound/Player/Music/)"
+    ]
+  }
+}

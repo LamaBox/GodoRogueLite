@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ccjnsqra1w53p"
+path="res://.godot/imported/Укус Босса.mp3-d6c1c169019a8ce38a7f48698f7e11f4.mp3str"
+
+[deps]
+
+source_file="res://Audio/Sound/BugBoss/Укус Босса.mp3"
+dest_files=["res://.godot/imported/Укус Босса.mp3-d6c1c169019a8ce38a7f48698f7e11f4.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

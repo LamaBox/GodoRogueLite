@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bfgf18t3r21e6"
+path="res://.godot/imported/2 шаг жука-моба.mp3-e21d44fd48f5b262a16fe88d16ad2602.mp3str"
+
+[deps]
+
+source_file="res://Audio/Sound/2 шаг жука-моба.mp3"
+dest_files=["res://.godot/imported/2 шаг жука-моба.mp3-e21d44fd48f5b262a16fe88d16ad2602.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

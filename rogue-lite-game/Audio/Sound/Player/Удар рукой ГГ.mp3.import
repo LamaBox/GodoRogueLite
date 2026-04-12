@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dusi4pbv2leue"
+path="res://.godot/imported/Удар рукой ГГ.mp3-0ec002bd57ebd2488721908825402b8a.mp3str"
+
+[deps]
+
+source_file="res://Audio/Sound/Player/Удар рукой ГГ.mp3"
+dest_files=["res://.godot/imported/Удар рукой ГГ.mp3-0ec002bd57ebd2488721908825402b8a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

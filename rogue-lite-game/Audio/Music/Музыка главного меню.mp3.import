@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://d3j07llfjoqax"
+path="res://.godot/imported/Музыка главного меню.mp3-ea745643ccaeb5c0ded0a02f38c03d89.mp3str"
+
+[deps]
+
+source_file="res://Audio/Music/Музыка главного меню.mp3"
+dest_files=["res://.godot/imported/Музыка главного меню.mp3-ea745643ccaeb5c0ded0a02f38c03d89.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

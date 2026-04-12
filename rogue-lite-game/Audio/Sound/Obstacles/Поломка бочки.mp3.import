@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://be5ascat26fh2"
+path="res://.godot/imported/Поломка бочки.mp3-c2f760207cbc3c6aa795f706a331f48f.mp3str"
+
+[deps]
+
+source_file="res://Audio/Sound/Obstacles/Поломка бочки.mp3"
+dest_files=["res://.godot/imported/Поломка бочки.mp3-c2f760207cbc3c6aa795f706a331f48f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

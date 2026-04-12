@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bx2457b0gmosa"
+path="res://.godot/imported/2 шаг Босса (1).mp3-c7a2ad6fcb549c4c6926a8e6d4cf26c7.mp3str"
+
+[deps]
+
+source_file="res://Audio/Sound/BugBoss/2 шаг Босса (1).mp3"
+dest_files=["res://.godot/imported/2 шаг Босса (1).mp3-c7a2ad6fcb549c4c6926a8e6d4cf26c7.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://2lqw0l0300s6"
+path="res://.godot/imported/Музыка уровня - Пещера.mp3-55dce2e8df2bf7735e79be0e490fc328.mp3str"
+
+[deps]
+
+source_file="res://Audio/Music/Музыка уровня - Пещера.mp3"
+dest_files=["res://.godot/imported/Музыка уровня - Пещера.mp3-55dce2e8df2bf7735e79be0e490fc328.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
