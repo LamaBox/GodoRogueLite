@@ -1,20 +1,21 @@
-using UnityEngine;
-using UnityEngine.UI;
-public class ScoreCounterUI : MonoBehaviour
-{
-    [SerializeField] private TMPro.TMP_Text scoreText;
+using Godot;
 
-    void Start()
+public partial class ScoreCounterUI : Label
+{
+    public override void _Ready()
     {
         if (ScoreCounter.Instance != null)
         {
-            ScoreCounter.Instance.OnScoreChanged += ScoreUpdate;
-            ScoreUpdate(ScoreCounter.Instance.GetScore());
+            ScoreCounter.Instance.OnScoreChanged += UpdateScore;
+            UpdateScore(ScoreCounter.Instance.GetScore());
         }
     }
 
-    private void ScoreUpdate(int score)
+    public override void _ExitTree()
     {
-        scoreText.text = score.ToString();
+        if (ScoreCounter.Instance != null)
+            ScoreCounter.Instance.OnScoreChanged -= UpdateScore;
     }
+
+    private void UpdateScore(int score) => Text = score.ToString();
 }

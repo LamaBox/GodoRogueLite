@@ -1,117 +1,87 @@
-using UnityEngine;
+using Godot;
 
-public class FollowCamera : MonoBehaviour
+public partial class FollowCamera : Camera2D
 {
-    [Header("Target Settings")]
-    [SerializeField] private Transform target; //объект за которым надо следить
-    [SerializeField] private Vector3 offset = new Vector3(0, 0, -10); //Смещение камеры
+	[Export] public NodePath TargetPath;
+	[Export] public float SmoothTime = 0.15f;
+	[Export] public bool UseSmooth = true;
+	[Export] public bool UseDeadZone = true;
+	[Export] public Vector2 DeadZoneSize = new Vector2(300f, 200f);
 
-    [Header("Smooth Settings")]
-    [SerializeField] private float smoothSpeed = 0.15f; //Плавность следования
-    [SerializeField] private bool useSmooth = true; //Использовать плавное следование
+	private Node2D _target;
+	private Vector2 _targetPosition;
+	private Vector2 _velocity = Vector2.Zero;
 
-    [Header("Dead Zone Settings")]
-    [SerializeField] private bool useDeadZone = true; // использовать мертвую зону
-    [SerializeField] private Vector2 deadZoneSize = new Vector2(3f, 2f); // размер мертвой зоны (ширина, высота)
-    
-    private Vector3 velocity = Vector3.zero;
-    private Vector3 targetPosition; // позиция, за которой следует камера
+	public override void _Ready()
+	{
+		if (TargetPath != null && !TargetPath.IsEmpty)
+		{
+			_target = GetNode<Node2D>(TargetPath);
+			GlobalPosition = _target.GlobalPosition;
+			_targetPosition = GlobalPosition;
+		}
+	}
 
-    void Start()
-    {
-        if (target == null)
-        {
-            Debug.LogError("Target not assigned to FollowCamera on " + gameObject.name);
-        }
+	public override void _PhysicsProcess(double delta)
+	{
+		if (_target == null)
+		{
+			_target = GetTree().GetFirstNodeInGroup("Player") as Node2D;
+			if (_target == null) return;
+			GlobalPosition = _target.GlobalPosition;
+			_targetPosition = GlobalPosition;
+			return;
+		}
 
-        // Инициализируем начальную позицию камеры
-        targetPosition = target.position + offset;
-    }
+		if (UseDeadZone)
+			HandleDeadZone();
+		else
+			_targetPosition = _target.GlobalPosition;
 
-    void LateUpdate()
-    {
-        Follow();
-    }
+		if (UseSmooth)
+			GlobalPosition = SmoothDamp(GlobalPosition, _targetPosition, ref _velocity, SmoothTime, (float)delta);
+		else
+			GlobalPosition = _targetPosition;
+	}
 
-    //метод следования камеры
-    private void Follow()
-    {
-        if (target == null) return;
+	private void HandleDeadZone()
+	{
+		Vector2 targetPos = _target.GlobalPosition;
 
-        if (useDeadZone)
-        {
-            HandleDeadZone();
-        }
-        else
-        {
-            // Обычное следование без dead zone
-            targetPosition = target.position + offset;
-        }
+		float halfW = DeadZoneSize.X * 0.5f;
+		float halfH = DeadZoneSize.Y * 0.5f;
 
-        // Двигаем камеру
-        if (useSmooth)
-        {
-            Vector3 smoothedPosition = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothSpeed);
-            transform.position = smoothedPosition;
-        }
-        else
-        {
-            transform.position = targetPosition;
-        }
-    }
+		if (targetPos.X < _targetPosition.X - halfW)
+			_targetPosition.X = targetPos.X + halfW;
+		else if (targetPos.X > _targetPosition.X + halfW)
+			_targetPosition.X = targetPos.X - halfW;
 
-    private void HandleDeadZone()
-    {
-        Vector3 targetWorldPosition = target.position + offset;
+		if (targetPos.Y < _targetPosition.Y - halfH)
+			_targetPosition.Y = targetPos.Y + halfH;
+		else if (targetPos.Y > _targetPosition.Y + halfH)
+			_targetPosition.Y = targetPos.Y - halfH;
+	}
 
-        // Получаем текущие границы dead zone в мировых координатах
-        float deadZoneLeft = transform.position.x - deadZoneSize.x * 0.5f;
-        float deadZoneRight = transform.position.x + deadZoneSize.x * 0.5f;
-        float deadZoneBottom = transform.position.y - deadZoneSize.y * 0.5f;
-        float deadZoneTop = transform.position.y + deadZoneSize.y * 0.5f;
+	// Аналог Unity Vector3.SmoothDamp
+	private static Vector2 SmoothDamp(Vector2 current, Vector2 target, ref Vector2 currentVelocity, float smoothTime, float deltaTime)
+	{
+		smoothTime = Mathf.Max(0.0001f, smoothTime);
+		float omega = 2f / smoothTime;
+		float x = omega * deltaTime;
+		float exp = 1f / (1f + x + 0.48f * x * x + 0.235f * x * x * x);
 
-        // Проверяем, вышел ли игрок за границы dead zone
-        if (targetWorldPosition.x < deadZoneLeft)
-        {
-            // Игрок слева от dead zone
-            targetPosition.x = targetWorldPosition.x + deadZoneSize.x * 0.5f;
-        }
-        else if (targetWorldPosition.x > deadZoneRight)
-        {
-            // Игрок справа от dead zone
-            targetPosition.x = targetWorldPosition.x - deadZoneSize.x * 0.5f;
-        }
+		float changeX = current.X - target.X;
+		float changeY = current.Y - target.Y;
 
-        if (targetWorldPosition.y < deadZoneBottom)
-        {
-            // Игрок снизу от dead zone
-            targetPosition.y = targetWorldPosition.y + deadZoneSize.y * 0.5f;
-        }
-        else if (targetWorldPosition.y > deadZoneTop)
-        {
-            // Игрок сверху от dead zone
-            targetPosition.y = targetWorldPosition.y - deadZoneSize.y * 0.5f;
-        }
+		float tempX = (currentVelocity.X + omega * changeX) * deltaTime;
+		float tempY = (currentVelocity.Y + omega * changeY) * deltaTime;
 
-        // Сохраняем Z координату
-        targetPosition.z = targetWorldPosition.z;
-    }
+		currentVelocity.X = (currentVelocity.X - omega * tempX) * exp;
+		currentVelocity.Y = (currentVelocity.Y - omega * tempY) * exp;
 
-    // Метод для установки размера dead zone
-    public void SetDeadZoneSize(Vector2 size)
-    {
-        deadZoneSize = size;
-    }
-    
-    // Визуализация dead zone в редакторе
-    private void OnDrawGizmosSelected()
-    {
-        if (useDeadZone)
-        {
-            Gizmos.color = Color.yellow;
-            Vector3 deadZoneCenter = transform.position;
-            Vector3 size = new Vector3(deadZoneSize.x, deadZoneSize.y, 0.1f);
-            Gizmos.DrawWireCube(deadZoneCenter, size);
-        }
-    }
+		return new Vector2(
+			target.X + (changeX + tempX) * exp,
+			target.Y + (changeY + tempY) * exp
+		);
+	}
 }

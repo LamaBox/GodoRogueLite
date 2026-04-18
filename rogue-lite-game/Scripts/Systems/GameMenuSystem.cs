@@ -1,175 +1,148 @@
-using UnityEngine;
-using UnityEngine.SceneManagement;
+using Godot;
 
-public class GameMenuSystem : MonoBehaviour
+// UI-ноды назначаются через инспектор как NodePath.
+// Меню-ноды (menuPause, settings и т.д.) должны иметь ProcessMode = Always,
+// чтобы работать во время паузы.
+public partial class GameMenuSystem : Node
 {
     public static GameMenuSystem Instance { get; private set; }
 
-    [Header("Panels")]
-    [SerializeField] private GameObject menuPause;
-    [SerializeField] private GameObject settings;
-    [SerializeField] private GameObject image; // Фон
-    [SerializeField] private GameObject lose;
-    [SerializeField] private GameObject win;
-    
-    [Header("HUD")]
-    [SerializeField] private GameObject hpBar;
-    [SerializeField] private GameObject mnBar;
-    [SerializeField] private GameObject scoreBar;
-    
-    private PlayerData pdata;
-    private GameObject player;
+    [Export] public NodePath MenuPausePath;
+    [Export] public NodePath SettingsPath;
+    [Export] public NodePath BackgroundImagePath;
+    [Export] public NodePath LosePanelPath;
+    [Export] public NodePath WinPanelPath;
+    [Export] public NodePath HpBarPath;
+    [Export] public NodePath MnBarPath;
+    [Export] public NodePath ScoreBarPath;
 
-    private bool isPaused = false;
-    private bool isGameEnded = false; // Флаг: игра закончена (победа или смерть)
-    
-    private int score = 0;
+    private CanvasItem _menuPause;
+    private CanvasItem _settings;
+    private CanvasItem _backgroundImage;
+    private CanvasItem _losePanel;
+    private CanvasItem _winPanel;
+    private CanvasItem _hpBar;
+    private CanvasItem _mnBar;
+    private CanvasItem _scoreBar;
 
-    void Awake()
+    private PlayerData _playerData;
+    private Node _player;
+    private bool _isPaused = false;
+    private bool _isGameEnded = false;
+
+    public override void _Ready()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null && Instance != this) { QueueFree(); return; }
         Instance = this;
 
-        ResumeGamePhysics(); // Сброс времени при старте
-        
-        // Скрываем все лишнее
-        SetObjectActive(menuPause, false);
-        SetObjectActive(settings, false);
-        SetObjectActive(image, false);
-        SetObjectActive(lose, false);
-        SetObjectActive(win, false);
+        _menuPause = GetNodeOrNull<CanvasItem>(MenuPausePath);
+        _settings = GetNodeOrNull<CanvasItem>(SettingsPath);
+        _backgroundImage = GetNodeOrNull<CanvasItem>(BackgroundImagePath);
+        _losePanel = GetNodeOrNull<CanvasItem>(LosePanelPath);
+        _winPanel = GetNodeOrNull<CanvasItem>(WinPanelPath);
+        _hpBar = GetNodeOrNull<CanvasItem>(HpBarPath);
+        _mnBar = GetNodeOrNull<CanvasItem>(MnBarPath);
+        _scoreBar = GetNodeOrNull<CanvasItem>(ScoreBarPath);
+
+        SetVisible(_menuPause, false);
+        SetVisible(_settings, false);
+        SetVisible(_backgroundImage, false);
+        SetVisible(_losePanel, false);
+        SetVisible(_winPanel, false);
+
+        GetTree().Paused = false;
+
+        // Ищем игрока в группе "Player"
+        _player = GetTree().GetFirstNodeInGroup("Player") as Node;
+        if (_player != null)
+        {
+            _playerData = _player.GetNodeOrNull<PlayerData>("PlayerData");
+            if (_playerData != null) _playerData.OnDead += LoseGame;
+        }
+        else GD.PushWarning("GameMenuSystem: Player not found!");
     }
 
-    void Start()
+    public override void _ExitTree()
     {
-        player = GameObject.FindWithTag("Player");
-        if (player != null)
-        {
-            pdata = player.GetComponent<PlayerData>();
-            if (pdata != null)
-            {
-                pdata.OnDead += LoseGame;
-            }
-        }
-        else
-        {
-            Debug.LogWarning("GameMenuSystem: Игрок не найден!");
-        }
+        if (_playerData != null) _playerData.OnDead -= LoseGame;
     }
-    
-    // Вызывается из скрипта Input игрока
+
     public void TogglePauseManual()
     {
-        // Если игра уже закончилась (выиграли или проиграли), паузу открывать нельзя
-        if (isGameEnded) return;
-
-        if (!isPaused)
-            PauseGame();
-        else
-            ResumeGame();
+        if (_isGameEnded) return;
+        if (!_isPaused) PauseGame();
+        else ResumeGame();
     }
-    
+
     private void PauseGame()
     {
-        isPaused = true;
-        Time.timeScale = 0;
-        SetObjectActive(menuPause, true);
-        SetObjectActive(image, true);
+        _isPaused = true;
+        GetTree().Paused = true;
+        SetVisible(_menuPause, true);
+        SetVisible(_backgroundImage, true);
     }
 
     private void ResumeGame()
     {
-        ResumeGamePhysics();
-        SetObjectActive(menuPause, false);
-        SetObjectActive(image, false);
-        SetObjectActive(settings, false);
+        _isPaused = false;
+        GetTree().Paused = false;
+        SetVisible(_menuPause, false);
+        SetVisible(_backgroundImage, false);
+        SetVisible(_settings, false);
     }
 
-    private void ResumeGamePhysics()
-    {
-        isPaused = false;
-        Time.timeScale = 1;
-    }
-    
-    public void ResumeButton()
-    {
-        ResumeGame();
-    }
+    public void ResumeButton() => ResumeGame();
 
     public void ToSettings()
     {
-        menuPause.SetActive(false);
-        settings.SetActive(true);
+        SetVisible(_menuPause, false);
+        SetVisible(_settings, true);
     }
 
     public void ToMainPause()
     {
-        menuPause.SetActive(true);
-        settings.SetActive(false);
+        SetVisible(_menuPause, true);
+        SetVisible(_settings, false);
     }
 
     public void Quit()
     {
-        ResumeGamePhysics(); // Важно!
+        GetTree().Paused = false;
         if (RoomManager.Instance != null) RoomManager.Instance.ResetRun();
         if (RunContextSystem.Instance != null) RunContextSystem.Instance.ResetRun();
-        SceneManager.LoadScene("MainMenu");
+        GetTree().ChangeSceneToFile("res://Scenes/MainMenu.tscn");
     }
-    
+
     private void LoseGame()
     {
-        if (isGameEnded) return; // Защита от двойного вызова
+        if (_isGameEnded) return;
         EndGameSequence();
-        
-        SetObjectActive(lose, true);
-        Debug.Log("Game Over: Lose");
+        SetVisible(_losePanel, true);
     }
 
     public void WinGame()
     {
-        if (isGameEnded) return;
+        if (_isGameEnded) return;
         EndGameSequence();
-        
-        SetObjectActive(win, true);
-        Debug.Log("Game Over: Win");
+        SetVisible(_winPanel, true);
     }
 
-    // Общая логика для конца игры, чтобы не дублировать код
     private void EndGameSequence()
     {
-        isGameEnded = true; // Блокируем паузу
-        
-        // Отписываемся сразу, чтобы не было ошибок
-        if (pdata != null) pdata.OnDead -= LoseGame;
+        _isGameEnded = true;
+        if (_playerData != null) _playerData.OnDead -= LoseGame;
 
-        Time.timeScale = 0;
-        SetObjectActive(image, true);
-        
-        // Скрываем интерфейс
-        SetObjectActive(hpBar, false);
-        SetObjectActive(mnBar, false);
-        SetObjectActive(scoreBar, false);
-        
-        // Отключаем игрока
-        if (player != null) player.SetActive(false);
+        GetTree().Paused = true;
+        SetVisible(_backgroundImage, true);
+        SetVisible(_hpBar, false);
+        SetVisible(_mnBar, false);
+        SetVisible(_scoreBar, false);
+
+        if (_player != null) _player.ProcessMode = ProcessModeEnum.Disabled;
     }
 
-    void OnDestroy()
+    private void SetVisible(CanvasItem node, bool visible)
     {
-        // ВАЖНО: Проверка на null перед отпиской
-        if (pdata != null)
-        {
-            pdata.OnDead -= LoseGame;
-        }
-    }
-
-    // Вспомогательный метод, чтобы не писать if (obj != null) каждый раз
-    private void SetObjectActive(GameObject obj, bool isActive)
-    {
-        if (obj != null) obj.SetActive(isActive);
+        if (node != null) node.Visible = visible;
     }
 }

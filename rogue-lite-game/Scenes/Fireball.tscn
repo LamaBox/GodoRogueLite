@@ -1,0 +1,116 @@
+[gd_scene format=3 uid="uid://bndio7odgs5aa"]
+
+[ext_resource type="Texture2D" path="res://Animathions/FireBall/fireball88x88.png" id="1_firetex"]
+[ext_resource type="Script" path="res://Scripts/PlayerScripts/Fireball.cs" id="2_script"]
+
+[sub_resource type="AtlasTexture" id="AT_f0"]
+atlas = ExtResource("1_firetex")
+region = Rect2(0, 0, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_f1"]
+atlas = ExtResource("1_firetex")
+region = Rect2(88, 0, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_f2"]
+atlas = ExtResource("1_firetex")
+region = Rect2(176, 0, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_e0"]
+atlas = ExtResource("1_firetex")
+region = Rect2(0, 88, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_e1"]
+atlas = ExtResource("1_firetex")
+region = Rect2(88, 88, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_e2"]
+atlas = ExtResource("1_firetex")
+region = Rect2(176, 88, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_e3"]
+atlas = ExtResource("1_firetex")
+region = Rect2(0, 176, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_e4"]
+atlas = ExtResource("1_firetex")
+region = Rect2(88, 176, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_e5"]
+atlas = ExtResource("1_firetex")
+region = Rect2(176, 176, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_e6"]
+atlas = ExtResource("1_firetex")
+region = Rect2(0, 264, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_e7"]
+atlas = ExtResource("1_firetex")
+region = Rect2(88, 264, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_e8"]
+atlas = ExtResource("1_firetex")
+region = Rect2(176, 264, 88, 88)
+
+[sub_resource type="AtlasTexture" id="AT_e9"]
+atlas = ExtResource("1_firetex")
+region = Rect2(0, 352, 88, 88)
+
+[sub_resource type="SpriteFrames" id="SF_1"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AT_f0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AT_f1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AT_f2")
+}],
+"loop": true,
+"name": &"fly",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AT_e0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AT_e1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AT_e2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AT_e3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AT_e4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AT_e5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AT_e6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AT_e7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AT_e8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AT_e9")
+}],
+"loop": false,
+"name": &"explode",
+"speed": 14.0
+}]
+
+[node name="Fireball" type="Node2D"]
+script = ExtResource("2_script")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(2.2, 2.2)
+sprite_frames = SubResource("SF_1")
+animation = &"fly"

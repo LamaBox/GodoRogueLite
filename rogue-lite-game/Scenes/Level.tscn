@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://clevel123456"]
+
+[ext_resource type="PackedScene" uid="uid://cplayer12345" path="res://Scenes/Player.tscn" id="1_player"]
+[ext_resource type="Script" uid="uid://4i5k2eykd25t" path="res://Scripts/CameraScripts/FollowCamera.cs" id="2_camera"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(2000, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2"]
+size = Vector2(32, 600)
+
+[node name="Level" type="Node2D" unique_id=839083579]
+
+[node name="Ground" type="StaticBody2D" parent="." unique_id=2141106673]
+position = Vector2(640, 450)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground" unique_id=761069256]
+shape = SubResource("RectangleShape2D_1")
+
+[node name="Visual" type="Polygon2D" parent="Ground" unique_id=1414280587]
+color = Color(0.3, 0.2, 0.1, 1)
+polygon = PackedVector2Array(-1000, -16, 1000, -16, 1000, 16, -1000, 16)
+
+[node name="WallLeft" type="StaticBody2D" parent="." unique_id=1427045804]
+position = Vector2(-16, 200)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallLeft" unique_id=690593053]
+shape = SubResource("RectangleShape2D_2")
+
+[node name="WallRight" type="StaticBody2D" parent="." unique_id=218715393]
+position = Vector2(1296, 200)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallRight" unique_id=1461649045]
+shape = SubResource("RectangleShape2D_2")
+
+[node name="Player" parent="." unique_id=1373496644 instance=ExtResource("1_player")]
+position = Vector2(640, 350)
+JumpSpeed = 1500.0
+
+[node name="FollowCamera" type="Camera2D" parent="." unique_id=1822187823]
+script = ExtResource("2_camera")
+TargetPath = NodePath("../Player")

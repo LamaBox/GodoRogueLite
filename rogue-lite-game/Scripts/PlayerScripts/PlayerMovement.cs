@@ -1,276 +1,205 @@
-using UnityEngine;
-using UnityEngine.InputSystem;
+using Godot;
 using static PlayerDataStructures;
 
-public class PlayerMovement : MonoBehaviour
+public partial class PlayerMovement : CharacterBody2D
 {
-    [Header("Movement Settings")]
-    [SerializeField] private float playerDashSpeed = 0; 
-    [SerializeField] private float playerdashCooldown = 0; 
-    [SerializeField] private float playergravityScale = 0; 
+	[Export] public float MoveSpeed = 500f;
+	[Export] public float JumpSpeed = 2500f;
+	[Export] public float DashSpeed = 2000f;
+	[Export] public float DashCooldown = 1.5f;
+	[Export] public float GravityScale = 9800f;
 
-    [Header("GroundCheck Settings")]
-    [SerializeField] private Transform groundCheck;
-    [SerializeField] private float groundCheckRadius = 0.2f;
-    [SerializeField] private LayerMask groundLayer = 1;
+	private float _axis = 0f;
+	private bool _isFacingRight = true;
+	private bool _isMovementLocked = false;
 
-    private Rigidbody2D rb2d;
-    
-    // Переменные движения
-    private float axis = 0; 
-    private bool isFacingRight = true; 
+	private float _dashCooldownTimer = 0f;
+	private bool _isDashing = false;
+	private bool _isDashPhysicsActive = false;
+	private float _lockedDashDirection = 0f;
+	private float _dashSafetyTimer = 0f;
+	private const float MaxDashSafetyTime = 0.15f;
+	private bool _autoStartDash = false;
 
-    // БЛОКИРОВКА ДВИЖЕНИЯ
-    private bool isMovementLocked = false; 
+	private float _doubleTapRightTimer = 0f;
+	private float _doubleTapLeftTimer = 0f;
+	private bool _waitingSecondTapRight = false;
+	private bool _waitingSecondTapLeft = false;
+	private const float DoubleTapWindow = 0.3f;
 
-    // Переменные рывка
-    private float dashCooldownTimer = 0f;
-    
-    // Глобальный флаг "Мы в режиме рывка" (блокирует управление, включаем анимацию)
-    private bool isDashing = false; 
-    
-    // Флаг физики "Прикладываем силу" (включается Ивентом)
-    private bool isDashPhysicsActive = false;
+	public bool GetIsDashing() => _isDashing;
+	public float GetAxis() => _axis;
+	public bool IsMovementLocked => _isMovementLocked;
+	public bool IsDashing => _isDashing;
+	public float Axis => _axis;
+	public bool IsFacingRight => _isFacingRight;
 
-    private float lockedDashDirection = 0f; 
-    
-    // Страховка
-    private float dashSafetyTimer = 0f; 
-    private const float MAX_DASH_SAFETY_TIME = 0.5f; 
-    
-    private float playerSpeed = 0;
-    private float playerJumpSpeed = 0;
+	public override void _Process(double delta)
+	{
+		float dt = (float)delta;
 
-    public bool GetIsDashing() => isDashing;
-    public float GetAxis() => axis;
+		_axis = Input.GetAxis("move_left", "move_right");
 
-    // Геттер для аниматора или других систем, чтобы знать, заблокированы ли мы
-    public bool IsMovementLocked() => isMovementLocked;
+		if (_dashCooldownTimer > 0)
+			_dashCooldownTimer -= dt;
 
-    void Start()
-    {
-        rb2d = GetComponent<Rigidbody2D>();
-        if(rb2d != null) rb2d.gravityScale = playergravityScale;
+		if (_isDashing)
+		{
+			_dashSafetyTimer -= dt;
+			if (_dashSafetyTimer <= 0)
+				StopDash();
 
-        if (groundCheck == null)
-            Debug.LogError("GroundCheck object not assigned to " + gameObject.name);
-    }
+			if (!_isDashPhysicsActive && !_autoStartDash)
+			{
+				_autoStartDash = true;
+				StartDashPhysics();
+			}
+		}
 
-    void Update()
-    {
-        if (dashCooldownTimer > 0)
-            dashCooldownTimer -= Time.deltaTime;
+		if (Input.IsActionJustPressed("jump") && IsOnFloor() && !_isDashing && !_isMovementLocked)
+		{
+			var vel = Velocity;
+			vel.Y = -JumpSpeed;
+			Velocity = vel;
+		}
 
-        // Страховка: если анимация зависла и не вызвала StopDash
-        if (isDashing)
-        {
-            dashSafetyTimer -= Time.deltaTime;
-            if (dashSafetyTimer <= 0)
-            {
-                Debug.LogWarning("Dash Safety Triggered! Stop Event missed.");
-                StopDash();
-            }
-        }
-    }
+		if (Input.IsActionJustPressed("dash"))
+			TryStartDash(_isFacingRight ? 1f : -1f);
 
-    void FixedUpdate()
-    {
-        // 1. Если движение заблокировано (каст магии, стан и т.д.)
-        if (isMovementLocked)
-        {
-            // Если мы в этот момент НЕ в рывке (рывок имеет инерцию, его лучше не стопорить резко, если не надо)
-            if (!isDashing)
-            {
-                rb2d.linearVelocityX = 0; // Останавливаемся по горизонтали
-                // Гравитация (VelocityY) продолжает работать штатно
-                return;
-            }
-            // Если мы заблокировали движение ВО ВРЕМЯ рывка, можно либо прервать рывок (StopDash),
-            // либо дать ему долететь. Обычно при стане рывок прерывают, при касте - каст не должен работать в рывке.
-            // Пока оставим выполнение рывка, если он уже начался.
-        }
+		if (Input.IsActionJustPressed("move_right"))
+		{
+			if (_waitingSecondTapRight && _doubleTapRightTimer > 0f)
+			{
+				TryStartDash(1f);
+				_waitingSecondTapRight = false;
+			}
+			else
+			{
+				_waitingSecondTapRight = true;
+				_doubleTapRightTimer = DoubleTapWindow;
+			}
+		}
+		if (_waitingSecondTapRight)
+		{
+			_doubleTapRightTimer -= dt;
+			if (_doubleTapRightTimer <= 0f)
+				_waitingSecondTapRight = false;
+		}
 
-        // 2. Логика рывка
-        if (isDashing)
-        {
-            // Если физика активирована ивентом - летим
-            if (isDashPhysicsActive)
-            {
-                rb2d.linearVelocity = new Vector2(lockedDashDirection * playerDashSpeed, 0);
-            }
-            else
-            {
-                // Фаза "Замаха"
-                rb2d.linearVelocity = Vector2.zero;
-                rb2d.gravityScale = 0f; 
-            }
-        }
-        // 3. Обычное движение
-        else
-        {
-            Move();
-        }
-    }
+		if (Input.IsActionJustPressed("move_left"))
+		{
+			if (_waitingSecondTapLeft && _doubleTapLeftTimer > 0f)
+			{
+				TryStartDash(-1f);
+				_waitingSecondTapLeft = false;
+			}
+			else
+			{
+				_waitingSecondTapLeft = true;
+				_doubleTapLeftTimer = DoubleTapWindow;
+			}
+		}
+		if (_waitingSecondTapLeft)
+		{
+			_doubleTapLeftTimer -= dt;
+			if (_doubleTapLeftTimer <= 0f)
+				_waitingSecondTapLeft = false;
+		}
+	}
 
-    // --- ПУБЛИЧНЫЕ МЕТОДЫ БЛОКИРОВКИ ---
+	public override void _PhysicsProcess(double delta)
+	{
+		float dt = (float)delta;
+		var velocity = Velocity;
 
-    /// <summary>
-    /// Запрещает двигаться, прыгать и делать рывок.
-    /// Вызывать перед началом каста.
-    /// </summary>
-    public void LockMovement()
-    {
-        isMovementLocked = true;
-        // Сразу гасим инерцию, чтобы персонаж не "скользил" во время каста
-        if (rb2d != null && !isDashing) 
-        {
-            rb2d.linearVelocityX = 0;
-        }
-    }
+		if (_isMovementLocked && !_isDashing)
+		{
+			velocity.X = 0f;
+			if (!IsOnFloor()) velocity.Y += GravityScale * dt;
+			Velocity = velocity;
+			MoveAndSlide();
+			return;
+		}
 
-    /// <summary>
-    /// Разрешает движение.
-    /// Вызывать после окончания каста или прерывания.
-    /// </summary>
-    public void UnlockMovement()
-    {
-        isMovementLocked = false;
-    }
+		if (_isDashing)
+		{
+			velocity = _isDashPhysicsActive
+				? new Vector2(_lockedDashDirection * DashSpeed, 0f)
+				: Vector2.Zero;
+		}
+		else
+		{
+			if (!IsOnFloor())
+				velocity.Y += GravityScale * dt;
 
-    // ------------------------------------
+			velocity.X = _axis * MoveSpeed;
 
-    public void Move()
-    {
-        rb2d.linearVelocityX = axis * playerSpeed;
+			if (_axis > 0 && !_isFacingRight) Flip();
+			else if (_axis < 0 && _isFacingRight) Flip();
+		}
 
-        if (axis > 0 && isFacingRight) Flip();
-        else if (axis < 0 && !isFacingRight) Flip();
-    }
+		Velocity = velocity;
+		MoveAndSlide();
+	}
 
-    private void Flip()
-    {
-        isFacingRight = !isFacingRight;
-        Vector3 scale = transform.localScale;
-        scale.x *= -1;
-        transform.localScale = scale;
-    }
+	private void Flip()
+	{
+		_isFacingRight = !_isFacingRight;
+		var scale = Scale;
+		scale.X *= -1;
+		Scale = scale;
+	}
 
-    public void MoveInput(InputAction.CallbackContext context)
-    {
-        axis = context.ReadValue<float>();
-    }
+	private void TryStartDash(float direction)
+	{
+		if (!_isDashing && _dashCooldownTimer <= 0 && !_isMovementLocked)
+		{
+			_isDashing = true;
+			_isDashPhysicsActive = false;
+			_autoStartDash = false;
+			_dashCooldownTimer = DashCooldown;
+			_dashSafetyTimer = MaxDashSafetyTime;
+			_lockedDashDirection = direction;
+		}
+	}
 
-    public void Jump(InputAction.CallbackContext context)
-    {
-        // Добавил проверку !isMovementLocked
-        if (context.performed && CheckGround() && !isDashing && !isMovementLocked)
-        {
-            rb2d.linearVelocityY = playerJumpSpeed;
-        }
-    }
+	public void StartDashPhysics()
+	{
+		if (!_isDashing) return;
+		_isDashPhysicsActive = true;
+		var vel = Velocity;
+		vel.Y = 0f;
+		Velocity = vel;
+	}
 
-    public void Sprint(InputAction.CallbackContext context)
-    {
-        if (context.performed) TryStartDash();
-    }
-    
-    public void DashInput(InputAction.CallbackContext context)
-    {
-        if (context.performed) TryStartDash();
-    }
+	public void StopDash()
+	{
+		if (!_isDashing) return;
+		_isDashing = false;
+		_isDashPhysicsActive = false;
+		_autoStartDash = false;
+		Velocity = Vector2.Zero;
+	}
 
-    private void TryStartDash()
-    {
-        // Добавил проверку !isMovementLocked
-        // Проверки: не дешим сейчас, кулдаун прошел, движение разрешено
-        if (!isDashing && dashCooldownTimer <= 0 && !isMovementLocked)
-        {
-            isDashing = true;
-            isDashPhysicsActive = false; 
-            
-            dashCooldownTimer = playerdashCooldown;
-            dashSafetyTimer = MAX_DASH_SAFETY_TIME;
+	public void LockMovement()
+	{
+		_isMovementLocked = true;
+		if (!_isDashing)
+		{
+			var vel = Velocity;
+			vel.X = 0f;
+			Velocity = vel;
+		}
+	}
 
-            lockedDashDirection = isFacingRight ? -1f : 1f;
-        }
-    }
+	public void UnlockMovement() => _isMovementLocked = false;
 
-    // --- EVENTS FOR ANIMATION ---
-
-    public void StartDashPhysics()
-    {
-        if (!isDashing) return; 
-        
-        isDashPhysicsActive = true;
-        rb2d.gravityScale = 0f; 
-        rb2d.linearVelocityY = 0f;
-    }
-
-    public void StopDash()
-    {
-        if (!isDashing) return;
-
-        isDashing = false;
-        isDashPhysicsActive = false;
-        
-        rb2d.gravityScale = playergravityScale; 
-        rb2d.linearVelocity = Vector2.zero; 
-    }
-
-    // --- REST OF THE CODE ---
-
-    private bool CheckGround()
-    {
-        if (groundCheck != null)
-            return Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-        return false;
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (groundCheck != null)
-        {
-            bool isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-            Gizmos.color = isGrounded ? Color.green : Color.red;
-            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
-        }
-    }
-    
-    private void OnCollisionStay2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Enemy"))
-        {
-            foreach (ContactPoint2D contact in collision.contacts)
-            {
-                if (contact.normal.y > 0.7f) 
-                {
-                    float pushDir = isFacingRight ? 1 : -1; 
-                    var v = new Vector2(pushDir * 300f, 2f);
-                    rb2d.AddForce(v, ForceMode2D.Force);
-                    return; 
-                }
-            }
-        }
-    }
-
-    #region EventsMetods
-    public void OnMovementModifiersChanged(MovementModifiersData data)
-    {
-        UpdateMovementValues(data);
-    }
-
-    private void UpdateMovementValues(MovementModifiersData data)
-    {
-        playerSpeed = data.PlayerSpeed;
-        playerJumpSpeed = data.JumpHeight;
-        playerDashSpeed = data.DashSpeed;
-        playerdashCooldown = data.DashCooldown;
-        playergravityScale = data.GravityScale;
-
-        if (rb2d != null && !isDashing)
-        {
-            rb2d.gravityScale = playergravityScale;
-        }
-    }
-    #endregion
+	public void OnMovementModifiersChanged(MovementModifiersData data)
+	{
+		MoveSpeed = data.PlayerSpeed;
+		JumpSpeed = data.JumpHeight;
+		DashSpeed = data.DashSpeed;
+		DashCooldown = data.DashCooldown;
+		GravityScale = data.GravityScale;
+	}
 }

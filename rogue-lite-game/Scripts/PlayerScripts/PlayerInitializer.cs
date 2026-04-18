@@ -1,65 +1,37 @@
-using UnityEngine;
+using Godot;
 
-public class PlayerInitializer : MonoBehaviour
+public partial class PlayerInitializer : Node
 {
-    [Header("Player Components")]
-    [SerializeField] private PlayerData playerData;
-    [SerializeField] private PlayerMovement playerMovement;
-    [SerializeField] private PlayerAttack playerAttack;
+    [Export] public NodePath PlayerDataPath;
+    [Export] public NodePath PlayerMovementPath;
+    [Export] public NodePath PlayerAttackPath;
 
-    private void Awake()
+    private PlayerData _playerData;
+    private PlayerMovement _playerMovement;
+    private PlayerAttack _playerAttack;
+
+    public override void _Ready()
     {
-        InitializeComponents();
-        SubscribeToEvents();
-        BroadcastAllData();
+        _playerData = GetNode<PlayerData>(PlayerDataPath);
+        _playerMovement = GetNode<PlayerMovement>(PlayerMovementPath);
+        _playerAttack = GetNode<PlayerAttack>(PlayerAttackPath);
+
+        if (_playerData == null) { GD.PushError("PlayerData not found on " + Name); return; }
+        if (_playerMovement == null) { GD.PushError("PlayerMovement not found on " + Name); return; }
+        if (_playerAttack == null) { GD.PushError("PlayerAttack not found on " + Name); return; }
+
+        _playerData.OnAttackModifiersChanged += _playerAttack.OnAttackModifiersChanged;
+        _playerData.OnDataInitialized += OnDataInitialized;
+
+        _playerData.BroadcastAllData();
     }
 
-    //проверяет что все компоненты игрока назначены в инспекторе
-    private void InitializeComponents()
+    public override void _ExitTree()
     {
-        if (playerData == null)
-        {
-            Debug.LogError("PlayerData component not found on " + gameObject.name);
-            return;
-        }
-
-        if (playerMovement == null)
-        {
-            Debug.LogError("PlayerMovement component not found on " + gameObject.name);
-            return;
-        }
-        if (playerAttack == null)
-        {
-            Debug.LogError("PlayerAttack component not found on " + gameObject.name);
-            return;
-        }
+        if (_playerData == null) return;
+        _playerData.OnAttackModifiersChanged -= _playerAttack.OnAttackModifiersChanged;
+        _playerData.OnDataInitialized -= OnDataInitialized;
     }
 
-    //подключает элементы к событиям
-    private void SubscribeToEvents()
-    {
-        playerData.OnMovementModifiersChanged += playerMovement.OnMovementModifiersChanged;
-        playerData.OnAttackModifiersChanged += playerAttack.OnAttackModifiersChanged;
-        playerData.OnDataInitialized += OnDataInitialized;
-    }
-
-    //запускает событие с передачей всех данных в PlayerData
-    private void BroadcastAllData()
-    {
-        playerData.BroadcastAllData();
-    }
-
-    //выводит сообщение, когда данные инициализированы
-    private void OnDataInitialized()
-    {
-        Debug.Log("Player fully initialized!");
-    }
-    
-    //удаляет подписки
-    private void OnDestroy()
-    {
-        playerData.OnMovementModifiersChanged -= playerMovement.OnMovementModifiersChanged;
-        playerData.OnAttackModifiersChanged -= playerAttack.OnAttackModifiersChanged;
-        playerData.OnDataInitialized -= OnDataInitialized;
-    }
+    private void OnDataInitialized() { }
 }

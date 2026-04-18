@@ -1,147 +1,110 @@
-using UnityEngine;
-using UnityEngine.InputSystem;
+using Godot;
+using System;
 using static PlayerDataStructures;
 
-public class PlayerAttack : MonoBehaviour
+public partial class PlayerAttack : Node2D
 {
-    [Header("Dependencies")]
-    [SerializeField] private PlayerMovement playerMovement; // Ссылка на скрипт движения
+    [Export] public NodePath PlayerMovementPath;
+    [Export] public NodePath AttackPointPath;
+    [Export] public PackedScene FireballScene;
 
-    [Header("Attack Settings (will be overridden by PlayerData)")]
-    [SerializeField] private float damage = 20f;
-    [SerializeField] private float attackSpeed = 1f; // attacks per second
-    [SerializeField] private float attackRange = 1.5f;
-    [SerializeField] private LayerMask damageableLayers;
+    [Export] public float Damage = 20f;
+    [Export] public float AttackSpeed = 8f;
+    [Export] public float AttackRange = 50f;
+    [Export] public uint DamageLayerMask = 1;
 
-    [Header("Attack Direction")]
-    [SerializeField] private Transform attackPoint; // точка, откуда идёт атака
-    [SerializeField] private LayerMask enemyLayer;
-    
-    [Header("Attack Visual")]
-    [SerializeField] private SpriteRenderer attackVisual;
-    private float visualAttackTimer = 0f;
+    public event Action OnAttackPerformed;
 
-    private float attackTimer = 0f;
-    private bool canAttack = true;
+    private PlayerMovement _playerMovement;
+    private Node2D _attackPoint;
+    private float _attackTimer = 0f;
+    private float _fireballTimer = 0f;
+    private bool _canAttack = true;
+    private bool _canFireball = true;
+    private bool _isAttackLocked = false;
 
-    // Флаг блокировки атаки (для магии, катсцен и т.д.)
-    private bool isAttackLocked = false;
+    public bool CanAttack => _canAttack;
 
-    public bool GetCanAttack()
+    public override void _Ready()
     {
-        return canAttack;
+        if (!string.IsNullOrEmpty(PlayerMovementPath))
+            _playerMovement = GetNode<PlayerMovement>(PlayerMovementPath);
+
+        if (!string.IsNullOrEmpty(AttackPointPath))
+            _attackPoint = GetNode<Node2D>(AttackPointPath);
     }
 
-    // Событие: атака выполнена
-    public event System.Action OnAttackPerformed;
-    
-    void Start()
+    public override void _Process(double delta)
     {
-        // Автоматически ищем скрипт движения, если не назначен
-        if (playerMovement == null)
-            playerMovement = GetComponent<PlayerMovement>();
-            
-        // if (attackPoint == null)
-        // {
-        //     attackPoint = transform;
-        //     Debug.LogWarning("AttackPoint not assigned. Using player transform as attack origin.");
-        // }
-    }
-    
-    void Update()
-    {
-        if (!canAttack)
+        if (!_canAttack)
         {
-            attackTimer -= Time.deltaTime;
-            if (attackTimer <= 0f)
-                canAttack = true;
+            _attackTimer -= (float)delta;
+            if (_attackTimer <= 0f) _canAttack = true;
         }
-        
-        // Скрываем визуализацию, если таймер атаки закончился
-        if (attackVisual != null && attackVisual.enabled && visualAttackTimer <= 0f)
+
+        if (!_canFireball)
         {
-            attackVisual.enabled = false;
+            _fireballTimer -= (float)delta;
+            if (_fireballTimer <= 0f) _canFireball = true;
         }
-        else if (attackVisual.enabled)
-            visualAttackTimer -= Time.deltaTime;
+
+        bool isDashing = _playerMovement != null && _playerMovement.IsDashing;
+
+        if (Input.IsActionJustPressed("attack") && _canAttack && !_isAttackLocked && !isDashing)
+            PerformMeleeAttack();
+
+        if (Input.IsActionJustPressed("fireball") && _canFireball && !_isAttackLocked && !isDashing)
+            SpawnFireball();
     }
 
-    public void OnAttackInput(InputAction.CallbackContext context)
-    {
-        // Проверяем:
-        // 1. Кнопка нажата
-        // 2. Кулдаун прошел (canAttack)
-        // 3. Атака НЕ заблокирована (isAttackLocked)
-        // 4. Мы НЕ в рывке (нельзя бить во время дэша)
-        
-        bool isDashing = playerMovement != null && playerMovement.GetIsDashing();
-        
-        if (context.performed && canAttack && !isAttackLocked && !isDashing)
-        {
-            PerformAttack();
-        }
-    }
+    public void LockAttack() => _isAttackLocked = true;
+    public void UnlockAttack() => _isAttackLocked = false;
 
-    // --- ПУБЛИЧНЫЕ МЕТОДЫ БЛОКИРОВКИ ---
-    
-    public void LockAttack()
+    private void PerformMeleeAttack()
     {
-        isAttackLocked = true;
-    }
-
-    public void UnlockAttack()
-    {
-        isAttackLocked = false;
-    }
-    
-    // ------------------------------------
-
-    private void PerformAttack()
-    {
-        canAttack = false;
-        attackTimer = 1f / attackSpeed;
-        
-        // Показываем визуализацию
-        if (attackVisual != null)
-        {
-            visualAttackTimer = 0.5f;
-            attackVisual.transform.localScale = Vector3.one * attackRange * 2f; // масштабируем под радиус
-            attackVisual.enabled = true;
-        }
-        
+        _canAttack = false;
+        _attackTimer = 1f / AttackSpeed;
         OnAttackPerformed?.Invoke();
-        
-        // Находим всех врагов в радиусе
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, damageableLayers);
 
-        foreach (Collider2D enemy in hitEnemies)
+        var origin = _attackPoint != null ? _attackPoint.GlobalPosition : GlobalPosition;
+        var spaceState = GetWorld2D().DirectSpaceState;
+        var query = new PhysicsShapeQueryParameters2D
         {
-            // Пытаемся получить интерфейс у объекта, в который попали
-            if (enemy.TryGetComponent(out IDamageable damageable))
-            {
-                damageable.TakeDamage(damage);
-                // Для дебага:
-                Debug.Log($"Hit enemy: {enemy.name} with {damage} damage (commented out)");
-            }
+            Shape = new CircleShape2D { Radius = AttackRange },
+            Transform = new Transform2D(0, origin),
+            CollisionMask = DamageLayerMask,
+            CollideWithBodies = true,
+            CollideWithAreas = false
+        };
+        foreach (var result in spaceState.IntersectShape(query))
+        {
+            if (result["collider"].As<Node>() is IDamageable d)
+                d.TakeDamage(Damage);
         }
-        Debug.Log("Совершил атаку");
     }
-    
-    // Обновление параметров из PlayerData
+
+    private void SpawnFireball()
+    {
+        if (FireballScene == null) return;
+
+        _canFireball = false;
+        _fireballTimer = 1f / AttackSpeed;
+
+        bool facingRight = _playerMovement == null || _playerMovement.IsFacingRight;
+        float dirX = facingRight ? 1f : -1f;
+        var origin = _attackPoint != null ? _attackPoint.GlobalPosition : GlobalPosition;
+
+        var fireball = FireballScene.Instantiate<Fireball>();
+        fireball.Direction = new Vector2(dirX, 0);
+        fireball.Damage = Damage;
+        fireball.GlobalPosition = origin;
+        GetTree().CurrentScene.AddChild(fireball);
+    }
+
     public void OnAttackModifiersChanged(AttackModifiersData data)
     {
-        damage = data.Damage;
-        attackSpeed = data.AttackSpeed;
-        attackRange = data.AttackRange;
-    }
-
-    // Визуализация радиуса атаки в редакторе
-    private void OnDrawGizmosSelected()
-    {
-        if (attackPoint != null)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(attackPoint.position, attackRange);
-        }
+        Damage = data.Damage;
+        AttackSpeed = data.AttackSpeed;
+        AttackRange = data.AttackRange;
     }
 }

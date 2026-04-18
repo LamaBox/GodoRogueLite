@@ -1,19 +1,13 @@
-using UnityEngine;
-using UnityEngine.InputSystem;
+using Godot;
 
-public class PlayerInputHandler : MonoBehaviour // Или добавь это в PlayerMovement
+public partial class PlayerInputHandler : Node
 {
-    // Этот метод нужно привязать в PlayerInput (Invoke Unity Events) -> Action "Pause"
-    public void OnPauseInput(InputAction.CallbackContext context)
+    public override void _Process(double delta)
     {
-        // Обязательная проверка фазы нажатия!
-        if (context.performed)
+        if (Input.IsActionJustPressed("pause"))
         {
-            // Ищем наше меню и переключаем его
             if (GameMenuSystem.Instance != null)
-            {
                 GameMenuSystem.Instance.TogglePauseManual();
-            }
         }
     }
 }

@@ -15,7 +15,15 @@
       "Bash(cp 'C:/Users/User/RiderProjects/rogueLiteGame/Assets/Audio/Sound/BugBoss/*.mp3' C:/Users/User/RiderProjects/GodoRogueLite/rogue-lite-game/Audio/Sound/BugBoss/)",
       "Bash(cp '__TRACKED_VAR__/Audio/Sound/BugBoss/*.wav' __TRACKED_VAR__/Audio/Sound/BugBoss/)",
       "Bash(cp '__TRACKED_VAR__/Audio/Sound/Obstacles/*.mp3' __TRACKED_VAR__/Audio/Sound/Obstacles/)",
-      "Bash(cp '__TRACKED_VAR__/Audio/Sound/Player/Music/*.mp3' __TRACKED_VAR__/Audio/Sound/Player/Music/)"
+      "Bash(cp '__TRACKED_VAR__/Audio/Sound/Player/Music/*.mp3' __TRACKED_VAR__/Audio/Sound/Player/Music/)",
+      "Bash(dotnet --list-sdks)",
+      "Bash(dotnet --version)",
+      "Read(//c/Program Files/dotnet/**)",
+      "Bash(where dotnet:*)",
+      "Bash(find C:\\\\Users\\\\User\\\\RiderProjects\\\\GodoRogueLite\\\\rogue-lite-game *)",
+      "Bash(find Animathions -type f \\\\\\( -name \"*.png\" -o -name \"*.jpg\" -o -name \"*.jpeg\" -o -name \"*.gif\" -o -name \"*.bmp\" -o -name \"*.webp\" \\\\\\) -exec sh -c 'file \"{}\" | grep -oE \"[0-9]+ x [0-9]+\" && echo \"{}\"' \\\\;)",
+      "Bash(find Sprites -type f \\\\\\( -name \"*.png\" -o -name \"*.jpg\" -o -name \"*.jpeg\" -o -name \"*.gif\" -o -name \"*.bmp\" -o -name \"*.webp\" \\\\\\) -exec sh -c 'echo \"{}:\"; file \"{}\" | grep -oE \"[0-9]+ x [0-9]+\"' \\\\;)",
+      "Bash(xargs grep *)"
     ]
   }
 }
