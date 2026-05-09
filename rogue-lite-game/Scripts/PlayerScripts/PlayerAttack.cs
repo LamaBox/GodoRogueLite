@@ -11,7 +11,7 @@ public partial class PlayerAttack : Node2D
     [Export] public float Damage = 20f;
     [Export] public float AttackSpeed = 8f;
     [Export] public float AttackRange = 50f;
-    [Export] public uint DamageLayerMask = 1;
+    [Export] public uint DamageLayerMask = 9;
 
     public event Action OnAttackPerformed;
 
@@ -78,8 +78,11 @@ public partial class PlayerAttack : Node2D
         };
         foreach (var result in spaceState.IntersectShape(query))
         {
-            if (result["collider"].As<Node>() is IDamageable d)
+            var node = result["collider"].As<Node>();
+            if (node is IDamageable d)
                 d.TakeDamage(Damage);
+            if (node is IExtinguishable e)
+                e.Extinguish();
         }
     }
 

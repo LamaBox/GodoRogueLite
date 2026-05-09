@@ -300,6 +300,7 @@ animations = [{
 }]
 
 [node name="Player" type="CharacterBody2D" unique_id=2109574144]
+groups = ["Player"]
 script = ExtResource("1_playermv")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1982113110]

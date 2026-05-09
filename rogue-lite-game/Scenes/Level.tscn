@@ -2,6 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://cplayer12345" path="res://Scenes/Player.tscn" id="1_player"]
 [ext_resource type="Script" uid="uid://4i5k2eykd25t" path="res://Scripts/CameraScripts/FollowCamera.cs" id="2_camera"]
+[ext_resource type="PackedScene" uid="uid://y6wn836nxmma" path="res://Scenes/BugEnemy.tscn" id="3_bugenemy"]
+[ext_resource type="Script" uid="uid://bj2aelgntgvy8" path="res://Scripts/Canvas/HUD/PlayerHPBar.cs" id="4_hpbar"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
 size = Vector2(2000, 32)
@@ -34,9 +36,19 @@ position = Vector2(1296, 200)
 shape = SubResource("RectangleShape2D_2")
 
 [node name="Player" parent="." unique_id=1373496644 instance=ExtResource("1_player")]
-position = Vector2(640, 350)
+position = Vector2(333, 400)
 JumpSpeed = 1500.0
 
 [node name="FollowCamera" type="Camera2D" parent="." unique_id=1822187823]
 script = ExtResource("2_camera")
 TargetPath = NodePath("../Player")
+
+[node name="BugEnemy" parent="." unique_id=806241833 instance=ExtResource("3_bugenemy")]
+position = Vector2(900, 400)
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1131266173]
+
+[node name="PlayerHPBar" type="Node2D" parent="HUD" unique_id=1465488398]
+position = Vector2(12, 12)
+script = ExtResource("4_hpbar")
+PlayerDataPath = NodePath("../../Player/PlayerData")

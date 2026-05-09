@@ -1,0 +1,127 @@
+[gd_scene format=3 uid="uid://deu23lljrv8rn"]
+
+[ext_resource type="Script" uid="uid://b3frqusjyh1he" path="res://Scripts/Environment/FireItem.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bwaxw3dfbkyho" path="res://Sprites/Enviroment/Lamp/Lamp.png" id="2_burning"]
+[ext_resource type="Texture2D" uid="uid://vnw7hli6607w" path="res://Sprites/Enviroment/fireoff.png" id="3_off"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1i64f"]
+atlas = ExtResource("2_burning")
+region = Rect2(0, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i7rju"]
+atlas = ExtResource("2_burning")
+region = Rect2(32, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tuk2k"]
+atlas = ExtResource("2_burning")
+region = Rect2(64, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kiaih"]
+atlas = ExtResource("2_burning")
+region = Rect2(96, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1t0og"]
+atlas = ExtResource("2_burning")
+region = Rect2(128, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p48jy"]
+atlas = ExtResource("2_burning")
+region = Rect2(160, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5lwbh"]
+atlas = ExtResource("2_burning")
+region = Rect2(192, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t0evy"]
+atlas = ExtResource("2_burning")
+region = Rect2(224, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ls0yk"]
+atlas = ExtResource("2_burning")
+region = Rect2(256, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0q7pl"]
+atlas = ExtResource("2_burning")
+region = Rect2(288, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ksol0"]
+atlas = ExtResource("2_burning")
+region = Rect2(320, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d81ky"]
+atlas = ExtResource("2_burning")
+region = Rect2(352, 0, 32, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mu4e5"]
+atlas = ExtResource("3_off")
+region = Rect2(0, 54, 48, 54)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lamp"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1i64f")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_i7rju")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tuk2k")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kiaih")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1t0og")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p48jy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5lwbh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t0evy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ls0yk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0q7pl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ksol0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_d81ky")
+}],
+"loop": true,
+"name": &"Burning",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mu4e5")
+}],
+"loop": false,
+"name": &"Off",
+"speed": 1.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lamp"]
+size = Vector2(48, 64)
+
+[node name="Lamp" type="StaticBody2D" unique_id=321717284]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("1_script")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=285038411]
+texture_filter = 1
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_lamp")
+animation = &"Off"
+autoplay = "Burning"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=31255917]
+shape = SubResource("RectangleShape2D_lamp")

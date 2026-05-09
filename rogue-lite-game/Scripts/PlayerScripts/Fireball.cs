@@ -6,7 +6,7 @@ public partial class Fireball : Node2D
     [Export] public float Lifetime = 0.35f;
     [Export] public float ExplosionRadius = 120f;
     [Export] public float Damage = 20f;
-    [Export] public uint DamageLayerMask = 1;
+    [Export] public uint DamageLayerMask = 9;
 
     public Vector2 Direction = Vector2.Right;
 
@@ -28,6 +28,31 @@ public partial class Fireball : Node2D
         _timer += (float)delta;
         if (_timer >= Lifetime) { Explode(); return; }
         Position += Direction * Speed * (float)delta;
+        CheckImpact();
+    }
+
+    private void CheckImpact()
+    {
+        var spaceState = GetWorld2D().DirectSpaceState;
+        var query = new PhysicsShapeQueryParameters2D
+        {
+            Shape = new CircleShape2D { Radius = 12f },
+            Transform = new Transform2D(0, GlobalPosition),
+            CollisionMask = DamageLayerMask,
+            CollideWithBodies = true,
+            CollideWithAreas = false
+        };
+        foreach (var result in spaceState.IntersectShape(query))
+        {
+            var node = result["collider"].As<Node>();
+            if (node is IDamageable)
+            {
+                Explode();
+                return;
+            }
+            if (node is IIgnitable i)
+                i.Ignite();
+        }
     }
 
     private void Explode()
@@ -52,8 +77,11 @@ public partial class Fireball : Node2D
         };
         foreach (var result in spaceState.IntersectShape(query))
         {
-            if (result["collider"].As<Node>() is IDamageable d)
+            var node = result["collider"].As<Node>();
+            if (node is IDamageable d)
                 d.TakeDamage(Damage);
+            if (node is IIgnitable i)
+                i.Ignite();
         }
     }
 
