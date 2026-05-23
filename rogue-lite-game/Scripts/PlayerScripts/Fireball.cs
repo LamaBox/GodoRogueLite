@@ -45,7 +45,7 @@ public partial class Fireball : Node2D
         foreach (var result in spaceState.IntersectShape(query))
         {
             var node = result["collider"].As<Node>();
-            if (node is IDamageable)
+            if (node is IDamageable && node is not Chest)
             {
                 Explode();
                 return;
