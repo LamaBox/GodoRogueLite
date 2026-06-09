@@ -65,6 +65,7 @@ public partial class PlayerAttack : Node2D
         _canAttack = false;
         _attackTimer = 1f / AttackSpeed;
         OnAttackPerformed?.Invoke();
+        SfxManager.Instance?.Play(SfxId.PlayerMelee);
 
         var origin = _attackPoint != null ? _attackPoint.GlobalPosition : GlobalPosition;
         var spaceState = GetWorld2D().DirectSpaceState;
@@ -92,6 +93,7 @@ public partial class PlayerAttack : Node2D
 
         _canFireball = false;
         _fireballTimer = 1f / AttackSpeed;
+        SfxManager.Instance?.Play(SfxId.FireballCast);
 
         bool facingRight = _playerMovement == null || _playerMovement.IsFacingRight;
         float dirX = facingRight ? 1f : -1f;

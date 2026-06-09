@@ -6,6 +6,7 @@ public partial class PlayerMovement : CharacterBody2D
 	[Export] public float MoveSpeed = 500f;
 	[Export] public float JumpSpeed = 2500f;
 	[Export] public float DashSpeed = 2000f;
+	[Export] public float DashAcceleration = 6000f;
 	[Export] public float DashCooldown = 1.5f;
 	[Export] public float GravityScale = 9800f;
 
@@ -61,6 +62,7 @@ public partial class PlayerMovement : CharacterBody2D
 			var vel = Velocity;
 			vel.Y = -JumpSpeed;
 			Velocity = vel;
+			SfxManager.Instance?.Play(SfxId.PlayerJump);
 		}
 
 		if (Input.IsActionJustPressed("dash"))
@@ -123,9 +125,9 @@ public partial class PlayerMovement : CharacterBody2D
 
 		if (_isDashing)
 		{
-			velocity = _isDashPhysicsActive
-				? new Vector2(_lockedDashDirection * DashSpeed, 0f)
-				: Vector2.Zero;
+			float targetVX = _isDashPhysicsActive ? _lockedDashDirection * DashSpeed : 0f;
+			velocity.X = Mathf.MoveToward(velocity.X, targetVX, DashAcceleration * dt);
+			velocity.Y = 0f;
 		}
 		else
 		{
@@ -160,6 +162,7 @@ public partial class PlayerMovement : CharacterBody2D
 			_dashCooldownTimer = DashCooldown;
 			_dashSafetyTimer = MaxDashSafetyTime;
 			_lockedDashDirection = direction;
+			SfxManager.Instance?.Play(SfxId.PlayerDash);
 		}
 	}
 

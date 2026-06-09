@@ -24,6 +24,7 @@ public partial class Barrel : StaticBody2D, IDamageable
         _isBroken = true;
         _collision.SetDeferred(CollisionShape2D.PropertyName.Disabled, true);
         _sprite.Play("Break");
+        SfxManager.Instance?.PlayAt(SfxId.BarrelBreak, GlobalPosition);
     }
 
     private void OnAnimationFinished()

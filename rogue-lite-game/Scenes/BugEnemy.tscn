@@ -2,12 +2,12 @@
 
 [ext_resource type="Script" uid="uid://b2ryrhrr4xm0j" path="res://Scripts/BotScripts/BugEnemy.cs" id="1_bugenemy"]
 [ext_resource type="Script" uid="uid://bnfp83jjdymrg" path="res://Scripts/BotScripts/BugEnemyAnimator.cs" id="2_buganim"]
-[ext_resource type="Script" path="res://Scripts/BotScripts/BugHealthBar.cs" id="4_healthbar"]
 [ext_resource type="Texture2D" uid="uid://cjwmlsi6m7ejl" path="res://Sprites/Bot/EnemySprites.png" id="2_t1cdo"]
+[ext_resource type="Script" uid="uid://b7ibyq1i2vkbe" path="res://Scripts/BotScripts/BugHealthBar.cs" id="4_healthbar"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_body"]
-radius = 13.0
-height = 30.0
+radius = 15.0
+height = 70.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_vwip3"]
 atlas = ExtResource("2_t1cdo")
@@ -255,11 +255,11 @@ shape = SubResource("CapsuleShape2D_body")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=795200384]
 texture_filter = 1
-scale = Vector2(1.0, 1.0)
 sprite_frames = SubResource("SpriteFrames_8bibu")
 animation = &"Walk"
 
 [node name="VisionArea" type="Area2D" parent="." unique_id=667544599]
+visible = false
 collision_layer = 0
 monitorable = false
 
@@ -277,7 +277,7 @@ script = ExtResource("2_buganim")
 AnimatedSpritePath = NodePath("../AnimatedSprite2D")
 BugEnemyPath = NodePath("..")
 
-[node name="HealthBar" type="Node2D" parent="."]
-script = ExtResource("4_healthbar")
+[node name="HealthBar" type="Node2D" parent="." unique_id=1185733364]
 position = Vector2(0, -58)
+script = ExtResource("4_healthbar")
 BugEnemyPath = NodePath("..")

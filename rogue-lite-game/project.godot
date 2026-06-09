@@ -11,9 +11,18 @@ config_version=5
 [application]
 
 config/name="rogue-lite-game"
-run/main_scene="uid://ctestscene001"
+run/main_scene="uid://5nvptl38hbxq"
 config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 config/icon="res://icon.svg"
+
+[audio]
+
+buses/default_bus_layout="res://default_bus_layout.tres"
+
+[autoload]
+
+MusicManager="*res://Scripts/Audio/MusicManager.cs"
+SfxManager="*res://Scripts/Audio/SfxManager.cs"
 
 [dotnet]
 

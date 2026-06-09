@@ -10,7 +10,7 @@ public partial class AttackVisualEffect : Node2D
     public override void _Ready()
     {
         _slash = GetNode<Polygon2D>("SlashShape");
-        _slash.Modulate = new Color(1f, 0.65f, 0f, 0f);
+        _slash.Visible = false;
 
         if (!string.IsNullOrEmpty(PlayerAttackPath))
         {
