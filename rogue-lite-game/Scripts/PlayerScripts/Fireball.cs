@@ -20,6 +20,8 @@ public partial class Fireball : Node2D
         _sprite.FlipH = Direction.X > 0;
         _sprite.Play("fly");
         _sprite.AnimationFinished += OnAnimationFinished;
+
+        SfxManager.Instance?.PlayAt(SfxId.FireballFly, GlobalPosition);
     }
 
     public override void _Process(double delta)
@@ -52,6 +54,11 @@ public partial class Fireball : Node2D
             }
             if (node is IIgnitable i)
                 i.Ignite();
+            else if (node is StaticBody2D)
+            {
+                Explode();
+                return;
+            }
         }
     }
 

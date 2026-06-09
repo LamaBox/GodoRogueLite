@@ -71,9 +71,21 @@ public partial class BugEnemyAnimator : Node
 
     private void OnFrameChanged()
     {
-        if (_current != "Attack") return;
-        if (_sprite.Frame == 4)
-            _enemy.PerformAttack();
+        if (_current == "Attack")
+        {
+            if (_sprite.Frame == 4)
+                _enemy.PerformAttack();
+            return;
+        }
+
+        // Footsteps: alternate the two step samples on opposite frames of the walk cycle.
+        if (_current == "Walk")
+        {
+            if (_sprite.Frame == 0)
+                SfxManager.Instance?.PlayAt(SfxId.BugStep1, _enemy.GlobalPosition);
+            else if (_sprite.Frame == 3)
+                SfxManager.Instance?.PlayAt(SfxId.BugStep2, _enemy.GlobalPosition);
+        }
     }
 
     private void OnAnimationFinished()

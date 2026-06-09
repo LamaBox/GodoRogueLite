@@ -7,6 +7,7 @@ public partial class FollowCamera : Camera2D
 	[Export] public bool UseSmooth = true;
 	[Export] public bool UseDeadZone = true;
 	[Export] public Vector2 DeadZoneSize = new Vector2(300f, 200f);
+	[Export] public Vector2 TargetOffset = new Vector2(0f, -80f);
 
 	private Node2D _target;
 	private Vector2 _targetPosition;
@@ -36,7 +37,7 @@ public partial class FollowCamera : Camera2D
 		if (UseDeadZone)
 			HandleDeadZone();
 		else
-			_targetPosition = _target.GlobalPosition;
+			_targetPosition = _target.GlobalPosition + TargetOffset;
 
 		if (UseSmooth)
 			GlobalPosition = SmoothDamp(GlobalPosition, _targetPosition, ref _velocity, SmoothTime, (float)delta);
@@ -46,20 +47,20 @@ public partial class FollowCamera : Camera2D
 
 	private void HandleDeadZone()
 	{
-		Vector2 targetPos = _target.GlobalPosition;
+		Vector2 targetPos = _target.GlobalPosition + TargetOffset;
 
 		float halfW = DeadZoneSize.X * 0.5f;
-		float halfH = DeadZoneSize.Y * 0.5f;
 
 		if (targetPos.X < _targetPosition.X - halfW)
 			_targetPosition.X = targetPos.X + halfW;
 		else if (targetPos.X > _targetPosition.X + halfW)
 			_targetPosition.X = targetPos.X - halfW;
 
-		if (targetPos.Y < _targetPosition.Y - halfH)
-			_targetPosition.Y = targetPos.Y + halfH;
-		else if (targetPos.Y > _targetPosition.Y + halfH)
-			_targetPosition.Y = targetPos.Y - halfH;
+		// Track vertical directly (no Y dead zone). With a vertical dead zone the
+		// camera drifts up on a jump and never re-centres on landing, because at
+		// rest the player sits exactly on the zone's bottom edge. Smoothing keeps
+		// the jump motion soft and always returns to the resting height.
+		_targetPosition.Y = targetPos.Y;
 	}
 
 	// Аналог Unity Vector3.SmoothDamp

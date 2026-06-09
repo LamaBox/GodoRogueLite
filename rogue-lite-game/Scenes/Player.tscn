@@ -12,7 +12,7 @@
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
 radius = 15.0
-height = 40.0
+height = 76.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_megsn"]
 atlas = ExtResource("9_sheet")
@@ -300,7 +300,6 @@ animations = [{
 }]
 
 [node name="Player" type="CharacterBody2D" unique_id=2109574144]
-groups = ["Player"]
 script = ExtResource("1_playermv")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1982113110]
